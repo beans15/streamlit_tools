@@ -19,13 +19,9 @@ class Reactive(Generic[T]):
         st.session_state[self.key] = value
 
 
-@st.cache_data
-def _use_reactive(key: str, initial_value: T) -> Reactive[T]:
-    st.session_state[key] = initial_value
-    return Reactive(key)
-
-
 def use_reactive(name: str, initial_value: T) -> Reactive[T]:
     caller_name = inspect.currentframe().f_back.f_code.co_qualname  # type: ignore
     key = f"__reactive#{caller_name}#{name}"
-    return _use_reactive(key, initial_value)
+    if key not in st.session_state:
+        st.session_state[key] = initial_value
+    return Reactive(key)
