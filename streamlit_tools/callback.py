@@ -13,7 +13,7 @@ def st_callback(func: Callable[[Any], None]):
     class Callback:
         @property
         def key(self):
-            return f"__callback_{func.__name__}##{param}"
+            return f"__callback_{func.__qualname__}##{param}"
 
         @property
         def handler(self):
