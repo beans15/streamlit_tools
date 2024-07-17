@@ -1,7 +1,9 @@
-from typing import TypeVar, Generic, Hashable, overload
-from dataclasses import dataclass
-import streamlit as st
 import inspect
+from dataclasses import dataclass
+from typing import Any, Generic, Hashable, TypeVar, overload
+
+import streamlit as st
+from streamlit.runtime.uploaded_file_manager import UploadedFile
 
 T = TypeVar("T")
 K = TypeVar("K", bound=(str | int), covariant=True)
@@ -11,6 +13,9 @@ K = TypeVar("K", bound=(str | int), covariant=True)
 class Reactive(Generic[T]):
     key: str
 
+    def get_value(self) -> T | None:
+        return st.session_state.get(self.key)
+
     @property
     def value(self) -> T:
         return st.session_state[self.key]
@@ -18,6 +23,16 @@ class Reactive(Generic[T]):
     @value.setter
     def value(self, value: T):
         st.session_state[self.key] = value
+
+
+def use_empty_reactive(name: str) -> Reactive[Any]:
+    caller_name = inspect.currentframe().f_back.f_code.co_qualname  # type: ignore
+    key = f"__reactive#{caller_name}#{name}"
+    return Reactive(key)
+
+
+def use_file_reactive(name: str) -> Reactive[UploadedFile | None]:
+    return use_empty_reactive(name)
 
 
 def use_reactive(
